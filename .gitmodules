@@ -1,0 +1,3 @@
+[submodule "admin/js/JsBarcode"]
+	path = admin/js/JsBarcode
+	url = git@github.com:lindell/JsBarcode.git

@@ -157,6 +157,14 @@ class Wc_Labels {
 		$this->loader->add_action( 'admin_enqueue_scripts', $plugin_admin, 'enqueue_styles' );
 		$this->loader->add_action( 'admin_enqueue_scripts', $plugin_admin, 'enqueue_scripts' );
 
+
+		// Add Print Label to all products
+		$this->loader->add_filter( 'post_row_actions', $plugin_admin, 'modify_product_list_row_actions', 10, 2 );
+
+		// Register function for custom action 
+		$this->loader->add_action( 'admin_action_print_label' , $plugin_admin, 'print_label' );
+
+		// Create meta box
 		$this->loader->add_action( 'add_meta_boxes', $plugin_admin, 'printable_label_meta_box' );
 
 	}
@@ -172,8 +180,8 @@ class Wc_Labels {
 
 		$plugin_public = new Wc_Labels_Public( $this->get_plugin_name(), $this->get_version() );
 
-		$this->loader->add_action( 'wp_enqueue_scripts', $plugin_public, 'enqueue_styles' );
-		$this->loader->add_action( 'wp_enqueue_scripts', $plugin_public, 'enqueue_scripts' );
+		// $this->loader->add_action( 'wp_enqueue_scripts', $plugin_public, 'enqueue_styles' );
+		// $this->loader->add_action( 'wp_enqueue_scripts', $plugin_public, 'enqueue_scripts' );
 
 	}
 

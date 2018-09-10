@@ -84,19 +84,18 @@ class Wc_Labels_Admin {
 	 */
 	public function enqueue_scripts() {
 
-		/**
-		 * This function is provided for demonstration purposes only.
-		 *
-		 * An instance of this class should be passed to the run() function
-		 * defined in Wc_Labels_Loader as all of the hooks are defined
-		 * in that particular class.
-		 *
-		 * The Wc_Labels_Loader will then create the relationship
-		 * between the defined hooks and the functions defined in this
-		 * class.
-		 */
+		wp_enqueue_script( 'rsvp', plugin_dir_url( __FILE__ ) . 'js/qz-tray/dependencies/rsvp-3.1.0.min.js', array( 'jquery', 'jquery' ), $this->version, false );
+
+		wp_enqueue_script( 'sha-256', plugin_dir_url( __FILE__ ) . 'js/qz-tray/dependencies/sha-256.min.js', array( 'jquery', 'jquery' ), $this->version, false );
+
+		wp_enqueue_script( 'qz-tray', plugin_dir_url( __FILE__ ) . 'js/qz-tray/qz-tray.js', array( 'jquery', 'jquery' ), $this->version, false );
+
+
+		// wp_enqueue_script( 'Zebra-BrowserPrint', plugin_dir_url( __FILE__ ) . 'js/Zebra/BrowserPrint-1.0.4.min.js', array( 'jquery', 'jquery' ), $this->version, false );
+
 
 		wp_enqueue_script( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'js/wc-labels-admin.js', array( 'jquery' ), $this->version, false );
+		
 
 	}
 
@@ -113,7 +112,7 @@ class Wc_Labels_Admin {
 	        __( 'Printable Label', 'wc-labels' ),
 	        array( $this, 'printable_label_meta_box_callback' ),
 	        'product',
-	        'normal', 
+	        'side', 
 	        'default'
 	    );
 	
@@ -126,13 +125,99 @@ class Wc_Labels_Admin {
 	 * @since    1.0.0
 	 */
 	public function printable_label_meta_box_callback( $post ) {
+	 
+        $print_link = admin_url( 'admin.php?action=print_label&post=' . $post->ID );
 
-	    // Add a nonce field so we can check for it later.
-	    wp_nonce_field( 'printable_label_nonce', 'printable_label_nonce' );
+	    echo '<button class="print-label" href="'.$print_link.'">Print Label</button>';
 
-	    $value = get_post_meta( $post->ID, '_printable_label', true );
-
-	    echo '<textarea style="width:100%" id="printable_label" name="printable_label">Test' . esc_attr( $value ) . '</textarea>';
 	}
+
+
+	/**
+	 * Add Print Label link to each product
+	 *
+	 * @since    1.0.0
+	 */
+	function modify_product_list_row_actions( $actions, $post ) {
+	    // Check for your post type.
+	    if ( $post->post_type == "product" ) {
+	 
+	        $print_link = admin_url( 'admin.php?action=print_label&post=' . $post->ID );
+
+	        $new_actions = array(
+	            'print' => sprintf( '<a class="print-label" href="%1$s">%2$s</a>',
+	            esc_url( $print_link ),
+	            esc_html( __( 'Print Label', 'wc-labels' ) ) )
+	        );
+
+	        $actions = array_merge( $actions, $new_actions );
+
+	    }
+	 
+	    return $actions;
+	}
+
+
+	/**
+	 * Display Label in ZPL format
+	 *
+	 * In order for this to print, it needs to be captured by Javascript and passed to 
+	 * the print function
+	 */
+    public function print_label() {
+
+    	$post = get_post($_GET['post']);	    
+    	$product = get_product( $post->ID );
+
+	    $price = html_entity_decode(strip_tags($product->get_price_html()));
+	    $sku = $product->get_sku();
+	    $weight = $product->get_weight();
+
+	    if( ! $ticket_description = get_field( 'ticket_description', $post->ID ) ) {
+	    	$ticket_description = wp_trim_words( $product->get_short_description(), 30 );
+	    }
+
+    	header('Content-Type:text/plain');
+
+    	echo '^XA' . "\n";
+
+		// Area 1 - Price
+    	echo '^CF0,32' . "\n";
+    	//echo '^A@,,,E:TIM000.FNT' . "\n"
+    	echo '^FO12,38' . "\n";
+    	echo '^A0B^FD'.$price.'^FS' . "\n";
+
+		// Area 2 - Details
+		// Price
+    	echo '^CF0,19' . "\n";
+    	echo '^A@,,,E:TIM000.FNT' . "\n";
+    	echo '^FO54,28' . "\n";
+    	echo '^FD'.$price.'^FS' . "\n";
+
+		// SKU
+    	echo '^CF0,14' . "\n";
+    	echo '^FO54,46' . "\n";
+    	echo '^FD'.$sku.'^FS' . "\n";
+
+		// Description
+    	echo '^CF0,14' . "\n";
+    	echo '^FO54,60' . "\n";
+    	echo '^FD'.$ticket_description.'^FS' . "\n";
+
+		// Weight
+    	echo '^CF0,14' . "\n";
+    	echo '^FO54,86' . "\n";
+    	echo '^FD'.$weight.'^FS' . "\n";
+
+		// Area 3 - Barcode
+    	echo '^FO62,114' . "\n";
+    	echo '^BY1' . "\n";
+    	echo '^B8N,50,Y^FD'.$sku.'^FS' . "\n";
+
+    	echo '^XZ' . "\n";
+
+    	exit;
+
+    }
 
 }
