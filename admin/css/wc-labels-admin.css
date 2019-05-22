@@ -3,3 +3,7 @@
  * included in this file.
  */
 
+.option-help {
+	border: 1px solid #ddd;
+	padding: 10px;
+}

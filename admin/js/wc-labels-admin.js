@@ -6,7 +6,7 @@
 		/**
 		 * Capture print label links and redirect them to the print function
 		 */
-		$('a.print-label').click(function(event) { 
+		$('.print-label').click(function(event) { 
 		    event.preventDefault(); 
 		    console.log('printing '+$(this).attr('href'));
 		    $.ajax({

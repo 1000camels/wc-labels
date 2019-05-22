@@ -41,6 +41,15 @@ class Wc_Labels_Admin {
 	private $version;
 
 	/**
+	 * The options name to be used in this plugin
+	 *
+	 * @since  	1.0.0
+	 * @access 	private
+	 * @var  	string 		$option_name 	Option name of this plugin
+	 */
+	private $option_name = 'wc_labels_options';
+
+	/**
 	 * Initialize the class and set its properties.
 	 *
 	 * @since    1.0.0
@@ -53,6 +62,25 @@ class Wc_Labels_Admin {
 		$this->version = $version;
 
 	}
+
+	/**
+	 * Load the required dependencies for the Admin facing functionality.
+	 *
+	 * Include the following files that make up the plugin:
+	 *
+	 * - Wppb_Demo_Plugin_Admin_Settings. Registers the admin settings and page.
+	 *
+	 *
+	 * @since    1.0.0
+	 * @access   private
+	 */
+	// private function load_dependencies() {
+	// 	*
+	// 	 * The class responsible for orchestrating the actions and filters of the
+	// 	 * core plugin.
+		 
+	// 	require_once plugin_dir_path( dirname( __FILE__ ) ) .  'admin/class-wc-labels-settings.php';
+	// }
 
 	/**
 	 * Register the stylesheets for the admin area.
@@ -96,7 +124,97 @@ class Wc_Labels_Admin {
 
 		wp_enqueue_script( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'js/wc-labels-admin.js', array( 'jquery' ), $this->version, false );
 		
+	}
 
+	/**
+	 * Add an options page under the Settings submenu
+	 *
+	 * @since  1.0.0
+	 */
+	public function add_options_page() {
+	
+		$this->plugin_screen_hook_suffix = add_options_page(
+			__( 'WC Labels Settings', 'wc-labels' ),
+			__( 'WC Labels', 'wc-labels' ),
+			'manage_options',
+			$this->plugin_name,
+			array( $this, 'display_options_page' )
+		);
+	
+	}
+
+	/**
+	 * Render the options page for plugin
+	 *
+	 * @since  1.0.0
+	 */
+	public function display_options_page() {
+		include_once 'partials/wc-labels-admin-display.php';
+	}
+
+	/**
+	 * Register all related settings of this plugin
+	 *
+	 * @since  1.0.0
+	 */
+	public function register_setting() {
+		add_settings_section(
+			$this->option_name . '_general',
+			__( 'General', 'wc-labels' ),
+			array( $this, $this->option_name . '_general_cb' ),
+			$this->plugin_name
+		);
+		add_settings_field(
+			$this->option_name . '_zpl',
+			__( 'ZPL', 'wc-labels' ),
+			array( $this, $this->option_name . '_zpl_cb' ),
+			$this->plugin_name,
+			$this->option_name . '_general',
+			array( 'label_for' => $this->option_name . '_zpl' )
+		);
+		register_setting( $this->plugin_name, $this->option_name . '_zpl', 'string' );
+	}
+
+	/**
+	 * Render the text for the general section
+	 *
+	 * @since  1.0.0
+	 */
+	public function wc_labels_options_general_cb() {
+		echo '<p>' . __( 'Please change the settings accordingly.', 'wc-labels' ) . '</p>';
+	}
+
+	/**
+	 * Render the audio_selector field
+	 *
+	 * @since  1.0.0
+	 */
+	public function wc_labels_options_zpl_cb() {
+		$zpl_string = $this->get_zpl();
+
+		echo '<textarea name="'.$this->option_name.'_zpl" id="'.$this->option_name.'_zpl" cols="80" rows="50" class="zpl_text_options">';
+		echo $zpl_string;
+		echo '</textarea>';
+
+		//$zpl_url_string = urlencode($zpl_string);
+
+		echo '<div class="option-help">';
+		echo '<p><b>Available variables</b>: {{price}} {{sku}} {{weight}} {{ticket_description}} {{supplier_stock_code}}</p>';
+		echo '<p><a href="https://www.zebra.com/content/dam/zebra/manuals/printers/common/programming/zpl-zbi2-pm-en.pdf" target="_blank">ZPL Manual</a></p>';
+		//echo '<p><a href="http://labelary.com/viewer.html?density=6&width=4&height=6&units=inches&index=0&zpl='.$zpl_url_string.'" target="_blank">Online ZPL Viewer</a></p>';
+		echo '</div>';
+	}
+
+	/**
+	 * Add link to settings from Plugin list
+	 *
+	 * @since  1.0.1
+	 */
+	function add_plugin_page_settings_link( $links ) {
+		$links[] = '<a href="' .
+			admin_url( 'options-general.php?page=wc-labels' ) .
+			'">' . __('Settings') . '</a>';
+		return $links;
 	}
 
 
@@ -177,47 +295,51 @@ class Wc_Labels_Admin {
 	    	$ticket_description = wp_trim_words( $product->get_short_description(), 30 );
 	    }
 
+	    $supplier_stock_code = get_field( 'supplier_stock_code', $post->ID );
+
+	    $variables = array(
+	    	'price' => $price,
+	    	'sku' => $sku,
+	    	'weight' => $weight,
+	    	'ticket_description' => $ticket_description,
+	    	'supplier_stock_code' => $supplier_stock_code,
+	    );
+
+
     	header('Content-Type:text/plain');
 
-    	echo '^XA' . "\n";
-
-		// Area 1 - Price
-    	echo '^CF0,32' . "\n";
-    	//echo '^A@,,,E:TIM000.FNT' . "\n"
-    	echo '^FO12,38' . "\n";
-    	echo '^A0B^FD'.$price.'^FS' . "\n";
-
-		// Area 2 - Details
-		// Price
-    	echo '^CF0,19' . "\n";
-    	echo '^A@,,,E:TIM000.FNT' . "\n";
-    	echo '^FO54,28' . "\n";
-    	echo '^FD'.$price.'^FS' . "\n";
-
-		// SKU
-    	echo '^CF0,14' . "\n";
-    	echo '^FO54,46' . "\n";
-    	echo '^FD'.$sku.'^FS' . "\n";
-
-		// Description
-    	echo '^CF0,14' . "\n";
-    	echo '^FO54,60' . "\n";
-    	echo '^FD'.$ticket_description.'^FS' . "\n";
-
-		// Weight
-    	echo '^CF0,14' . "\n";
-    	echo '^FO54,86' . "\n";
-    	echo '^FD'.$weight.'^FS' . "\n";
-
-		// Area 3 - Barcode
-    	echo '^FO62,114' . "\n";
-    	echo '^BY1' . "\n";
-    	echo '^B8N,50,Y^FD'.$sku.'^FS' . "\n";
-
-    	echo '^XZ' . "\n";
+		echo $this->evaluate_zpl($variables);
 
     	exit;
 
+    }
+
+
+   	/**
+   	 *
+   	 */
+    public function evaluate_zpl($variables) {
+    	require_once('Mustache/Autoloader.php');
+		Mustache_Autoloader::register();
+
+		$m = new Mustache_Engine;
+		return $m->render($this->get_zpl(True), $variables);
+	}
+
+
+    public function get_zpl( $remove_blank_lines = False ) {
+		$zpl_string = get_option( $this->option_name . '_zpl' );
+		if( empty($zpl_string) ) {
+    		$zpl_file = plugin_dir_path( __FILE__ ) . 'partials/default-zpl.txt';
+    		$zpl_string = file_get_contents($zpl_file);
+    	}
+
+    	if( $remove_blank_lines ) {
+    		$zpl_string = preg_replace('/^[ \t]*[\r\n]+/m', '', $zpl_string);
+    		$zpl_string = preg_replace('/^\/\/.*[\r\n]+/m', '', $zpl_string);
+    	}
+
+    	return $zpl_string;
     }
 
 }

@@ -9,14 +9,14 @@
  * that starts the plugin.
  *
  * @link              https://aporia.info
- * @since             1.0.0
+ * @since             1.0.2
  * @package           Wc_Labels
  *
  * @wordpress-plugin
  * Plugin Name:       WC Labels
  * Plugin URI:        https://aporia.info/plugins/wc-labels
  * Description:       This plugin provides printable jewellery labels for all Woocommerce Products
- * Version:           1.0.0
+ * Version:           1.0.2
  * Author:            Darcy Christ
  * Author URI:        https://aporia.info
  * License:           GPL-2.0+

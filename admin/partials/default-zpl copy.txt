@@ -1,0 +1,57 @@
+^XA'
+
+// Area 1 - Vertical Price
+^CF0,32
+//echo '^A@,,,E:TIM000.FNT' . "\n"
+//echo '^FO12,38
+//echo '^FO6,28
+^FO6,38
+^A0B^FD{{price}}^FS
+
+// Area 2 - Details
+
+// Price
+^CF0,19
+^A@,,,E:TIM000.FNT
+//echo '^FO54,28
+//echo '^FO44,14
+^FO44,26
+^FD{{price}}^FS
+
+// SKU
+^CF0,14
+//echo '^FO54,46
+//echo '^FO44,34
+^FO44,48
+^FD{{sku}}^FS
+
+// Description
+^CF0,14
+//echo '^FO54,60
+//echo '^FO44,46
+^FO44,59
+^FD{{ticket_description}}^FS
+
+// Stock Code
+^CF0,14
+//echo '^FO54,86
+//echo '^FO44,58
+^FO44,70
+^FD{{supplier_stock_code}}^FS
+
+// Weight
+^CF0,14
+//echo '^FO54,86
+//echo '^FO44,74
+^FO44,88
+^FD{{weight}}^FS
+
+// Area 3 - Barcode
+//echo '^FO62,114
+//echo '^FO54,100
+^FO50,114
+^BY1
+^BEN,50,Y
+^FD{{sku}}^FS
+
+^XZ

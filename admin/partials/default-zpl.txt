@@ -1,0 +1,43 @@
+^XA'
+
+// Area 1 - Vertical Price
+^CF0,32
+^FO6,38
+^A0B^FD{{price}}^FS
+
+// Area 2 - Details
+
+// Price
+^CF0,19
+^A@,,,E:TIM000.FNT
+^FO44,26
+^FD{{price}}^FS
+
+// SKU
+^CF0,14
+^FO44,48
+^FD{{sku}}^FS
+
+// Ticket Description
+^CF0,12
+^FO44,59
+^FD{{ticket_description}}^FS
+
+// Supplier Stock Code
+^CF0,14
+^FO44,70
+^FD{{supplier_stock_code}}^FS
+
+// Weight
+^CF0,14
+^FO44,88
+^FD{{weight}}^FS
+
+
+// Area 3 - Barcode
+^FO50,114
+^BY1
+^BEN,50,Y
+^FD{{sku}}^FS
+
+^XZ
